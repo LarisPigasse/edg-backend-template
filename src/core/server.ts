@@ -1,4 +1,4 @@
-// src/core/server.ts - Versione semplificata funzionante
+// src/core/server.ts - EDG Server Core
 import express, { Application, Request, Response, Router } from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -40,14 +40,11 @@ export class EDGServer {
     if (options.customMiddleware) {
       options.customMiddleware.forEach((middleware) => {
         middleware(this.app);
-        console.log("🔧 Custom middleware applicato");
       });
     }
   }
 
   private setupMiddleware(): void {
-    console.log("🛡️  Setup middleware sicurezza...");
-
     // Security headers
     this.app.use(
       helmet({
@@ -59,7 +56,6 @@ export class EDGServer {
     this.app.use(
       cors({
         origin: (origin, callback) => {
-          // Permetti richieste senza origin (Postman, mobile apps, etc.)
           if (!origin) return callback(null, true);
 
           if (this.config.cors.origins.includes(origin)) {
@@ -90,7 +86,7 @@ export class EDGServer {
 
     this.app.use(globalLimiter);
 
-    // Body parsing con limiti ragionevoli
+    // Body parsing
     this.app.use(express.json({ limit: "10mb" }));
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
@@ -104,14 +100,18 @@ export class EDGServer {
   }
 
   private setupRoutes(): void {
-    console.log("🛣️  Setup routes...");
+    // PRIMA: Registra moduli del servizio
+    this.modules.forEach((module) => {
+      console.log(`📦 Registrando modulo: ${module.name} → ${module.path}`);
+      this.app.use(module.path, module.router);
+    });
 
-    // Root endpoint con info servizio
+    // DOPO: Root endpoint
     this.app.get("/", (req: Request, res: Response) => {
       res.json({
         success: true,
         data: {
-          message: `${this.config.serviceName} - Template EDG Backend`,
+          message: `${this.config.serviceName} - Ready`,
           service: this.config.serviceName,
           version: "1.0.0",
           environment: this.config.nodeEnv,
@@ -124,7 +124,7 @@ export class EDGServer {
       });
     });
 
-    // Health check con stato database
+    // Health check
     this.app.get("/health", async (req: Request, res: Response) => {
       try {
         const dbHealth = await this.database.healthCheck();
@@ -153,16 +153,10 @@ export class EDGServer {
         });
       }
     });
-
-    // Registra moduli del servizio
-    this.modules.forEach((module) => {
-      console.log(`📦 Registrando modulo: ${module.name} → ${module.path}`);
-      this.app.use(module.path, module.router);
-    });
   }
 
   private setupErrorHandling(): void {
-    // 404 handler - pattern sicuro (NO wildcards)
+    // 404 handler
     this.app.use((req: Request, res: Response) => {
       res.status(404).json({
         success: false,
@@ -190,8 +184,6 @@ export class EDGServer {
   }
 
   async initializeDatabase(): Promise<boolean> {
-    console.log("💾 Inizializzazione database...");
-
     // Test connessione
     const connected = await this.database.testConnection();
     if (!connected) return false;
@@ -212,13 +204,12 @@ export class EDGServer {
       }
     });
 
-    // Sync se richiesto esplicitamente
+    // Sync se richiesto
     if (process.env.DB_SYNC === "true") {
-      console.log("🔄 Sincronizzazione database richiesta (DB_SYNC=true)...");
+      console.log("🔄 Sincronizzazione database richiesta...");
       const synced = await this.database.syncDatabase();
       if (synced) {
-        console.log("✅ Database sincronizzato con successo");
-        console.log("💡 Per evitare sync ripetuti, rimuovi DB_SYNC=true dal .env");
+        console.log("✅ Database sincronizzato");
       }
       return synced;
     } else {
@@ -235,7 +226,6 @@ export class EDGServer {
       const dbReady = await this.initializeDatabase();
       if (!dbReady) {
         console.error("❌ Impossibile avviare il servizio senza database");
-        console.error("💡 Verifica le credenziali database nel file .env");
         process.exit(1);
       }
 
@@ -248,11 +238,11 @@ export class EDGServer {
         console.log(`🏁 Pronto per ricevere richieste!\n`);
       });
 
-      // Graceful shutdown handlers
+      // Graceful shutdown
       process.on("SIGTERM", () => this.shutdown("SIGTERM"));
       process.on("SIGINT", () => this.shutdown("SIGINT"));
     } catch (error) {
-      console.error("❌ Errore critico durante l'avvio:", error);
+      console.error("❌ Errore durante l'avvio:", error);
       process.exit(1);
     }
   }
@@ -270,7 +260,6 @@ export class EDGServer {
     }
   }
 
-  // Getters per development/testing
   getApp(): Application {
     return this.app;
   }
@@ -278,13 +267,8 @@ export class EDGServer {
   getDatabase(): DatabaseManager {
     return this.database;
   }
-
-  getConfig(): ServiceConfig {
-    return this.config;
-  }
 }
 
-// Factory function per creare server
 export const createServer = (options: ServerOptions): EDGServer => {
   return new EDGServer(options);
 };

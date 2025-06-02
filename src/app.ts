@@ -1,4 +1,4 @@
-// src/app.ts - Versione corretta e semplificata
+// src/app.ts - EDG Backend Template
 import { createServiceConfig } from "./core/config/environment";
 import { createServer } from "./core/server";
 import type { ServerModule } from "./core/server";
@@ -14,7 +14,7 @@ const config = createServiceConfig({
 });
 
 // ============================================================================
-// MODELLO ESEMPIO (per testare il database)
+// MODELLO ESEMPIO
 // ============================================================================
 
 const createExampleModel = (sequelize: any) => {
@@ -55,7 +55,7 @@ const createExampleModel = (sequelize: any) => {
 };
 
 // ============================================================================
-// ROUTE TEMPLATE
+// ROUTER TEMPLATE
 // ============================================================================
 
 const templateRouter = Router();
@@ -71,7 +71,40 @@ templateRouter.get("/health", (req: Request, res: Response) => {
   });
 });
 
-// Endpoint per testare il database
+// Info template
+templateRouter.get("/info", (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    data: {
+      name: "EDG Backend Template",
+      version: "1.0.0",
+      description: "Template base riutilizzabile per microservizi EDG",
+      features: [
+        "Express.js con TypeScript",
+        "Database configurabile (MySQL/PostgreSQL)",
+        "Security middleware (Helmet, CORS, Rate Limiting)",
+        "Error handling standardizzato",
+        "Struttura modulare",
+        "Hot reload development",
+      ],
+      endpoints: {
+        "GET /": "Service info",
+        "GET /health": "Health check",
+        "GET /template/health": "Template module health",
+        "GET /template/info": "Template info",
+        "GET /template/examples": "Lista esempi",
+        "POST /template/examples": "Crea esempio",
+      },
+      database: {
+        supported: ["mysql", "postgres"],
+        coming_soon: ["mongodb", "redis"],
+      },
+      timestamp: new Date().toISOString(),
+    },
+  });
+});
+
+// Examples endpoints
 templateRouter.get("/examples", (req: Request, res: Response) => {
   res.json({
     success: true,
@@ -83,7 +116,6 @@ templateRouter.get("/examples", (req: Request, res: Response) => {
   });
 });
 
-// Endpoint per creare un esempio (test database write)
 templateRouter.post("/examples", (req: Request, res: Response) => {
   try {
     const { name, description } = req.body;
@@ -96,7 +128,6 @@ templateRouter.post("/examples", (req: Request, res: Response) => {
       return;
     }
 
-    // Placeholder per creazione esempio
     const newExample = {
       id: require("uuid").v4(),
       name,
@@ -119,39 +150,6 @@ templateRouter.post("/examples", (req: Request, res: Response) => {
   }
 });
 
-// Info template
-templateRouter.get("/info", (req: Request, res: Response) => {
-  res.json({
-    success: true,
-    data: {
-      name: "EDG Backend Template",
-      version: "1.0.0",
-      description: "Template base per microservizi EDG",
-      features: [
-        "Express.js con TypeScript",
-        "Database configurabile (MySQL/PostgreSQL)",
-        "Security middleware (Helmet, CORS, Rate Limiting)",
-        "Error handling standardizzato",
-        "Struttura modulare",
-        "Hot reload development",
-      ],
-      endpoints: {
-        "GET /": "Service info",
-        "GET /health": "Health check",
-        "GET /template/health": "Template module health",
-        "GET /template/examples": "Lista esempi",
-        "POST /template/examples": "Crea esempio",
-        "GET /template/info": "Template info",
-      },
-      database: {
-        supported: ["mysql", "postgres"],
-        coming_soon: ["mongodb", "redis"],
-      },
-      timestamp: new Date().toISOString(),
-    },
-  });
-});
-
 // ============================================================================
 // MODULO TEMPLATE
 // ============================================================================
@@ -164,16 +162,10 @@ const templateModule: ServerModule = {
 };
 
 // ============================================================================
-// AVVIO SERVER TEMPLATE
+// AVVIO SERVER
 // ============================================================================
 
 console.log("🚀 Avvio EDG Backend Template...");
-console.log("📖 Per iniziare:");
-console.log("   1. cp .env.example .env");
-console.log("   2. Configura database nel .env");
-console.log("   3. npm run dev");
-console.log("   4. Visita http://localhost:3001");
-console.log("");
 
 const server = createServer({
   config,
