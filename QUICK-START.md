@@ -92,23 +92,41 @@ npm run db:sync    # Sync database (solo dev)
 ```
 your-service/
 ├── src/
-│   ├── core/           # ← Template framework
-│   ├── modules/        # ← La tua business logic
-│   └── app.ts          # ← Entry point
-├── .env                # ← Configurazione locale
-└── package.json        # ← Dependencies pronte
+│   ├── core/              # ← Template framework
+│   ├── controllers/       # ← Controller per le route
+│   ├── middleware/        # ← Middleware Express custom
+│   ├── models/           # ← Modelli database
+│   ├── routes/           # ← Definizioni route
+│   ├── services/         # ← Business logic e servizi
+│   ├── types/            # ← Interfacce TypeScript
+│   ├── utils/            # ← Funzioni utility
+│   └── app.ts            # ← Entry point
+├── .env                  # ← Configurazione locale
+└── package.json          # ← Dependencies pronte
 ```
 
-### Personalizzazione
+### Workflow Sviluppo
 
 ```typescript
-// src/app.ts - Modifica il modulo principale
-const mainModule: ServerModule = {
-  name: "orders",
-  path: "/api/orders",
-  router: ordersRouter, // ← Le tue route
-  models: [OrderModel], // ← I tuoi modelli
-};
+// 1. Modelli database
+// src/models/Order.ts
+export const createOrderModel = (sequelize) => { ... }
+
+// 2. Tipi TypeScript
+// src/types/Order.ts
+export interface Order { id: string; ... }
+
+// 3. Business logic
+// src/services/OrderService.ts
+export class OrderService { ... }
+
+// 4. Controller HTTP
+// src/controllers/OrderController.ts
+export class OrderController { ... }
+
+// 5. Route definition
+// src/routes/orders.ts
+export const ordersRouter = Router();
 ```
 
 ## 🔧 Tips

@@ -74,7 +74,18 @@ try {
   fs.mkdirSync(servicePath, { recursive: true });
 
   // Struttura directory
-  const dirs = ["src/core/config", "src/modules", "scripts", "tests"];
+  const dirs = [
+    "src/core/config",
+    "src/controllers",
+    "src/middleware",
+    "src/models",
+    "src/routes",
+    "src/services",
+    "src/types",
+    "src/utils",
+    "scripts",
+    "tests",
+  ];
 
   dirs.forEach((dir) => {
     fs.mkdirSync(path.join(servicePath, dir), { recursive: true });
@@ -112,7 +123,7 @@ const config = createServiceConfig({
 });
 
 // ============================================================================
-// MODELLI (DA IMPLEMENTARE)
+// MODELLI (DA IMPLEMENTARE in src/models/)
 // ============================================================================
 
 const createMainModel = (sequelize: any) => {
@@ -148,7 +159,7 @@ const createMainModel = (sequelize: any) => {
 };
 
 // ============================================================================
-// ROUTE BASE
+// ROUTE BASE (DA SPOSTARE in src/routes/)
 // ============================================================================
 
 const mainRouter = Router();
@@ -171,6 +182,22 @@ mainRouter.get('/', (req: Request, res: Response) => {
       message: 'Servizio pronto per l\\'implementazione',
       database: '${dbType}',
       port: ${port},
+      structure: {
+        controllers: 'src/controllers/ - Controller per le route',
+        middleware: 'src/middleware/ - Middleware Express custom',
+        models: 'src/models/ - Modelli database',
+        routes: 'src/routes/ - Definizioni route',
+        services: 'src/services/ - Business logic e servizi',
+        types: 'src/types/ - Interfacce TypeScript',
+        utils: 'src/utils/ - Funzioni utility'
+      },
+      todo: [
+        'Implementa modelli in src/models/',
+        'Crea controller in src/controllers/',
+        'Definisci route in src/routes/',
+        'Aggiungi business logic in src/services/',
+        'Configura middleware in src/middleware/'
+      ],
       timestamp: new Date().toISOString(),
     },
   });
@@ -190,6 +217,17 @@ const mainModule: ServerModule = {
 // ============================================================================
 // AVVIO SERVER
 // ============================================================================
+
+console.log('🚀 Avvio ${serviceName}...');
+console.log('📁 Struttura progetto:');
+console.log('   src/controllers/ - Controller per le route');
+console.log('   src/middleware/  - Middleware Express custom');
+console.log('   src/models/      - Modelli database');  
+console.log('   src/routes/      - Definizioni route');
+console.log('   src/services/    - Business logic e servizi');
+console.log('   src/types/       - Interfacce TypeScript');
+console.log('   src/utils/       - Funzioni utility');
+console.log('');
 
 const server = createServer({
   config,
@@ -232,6 +270,7 @@ export default server;
       "@types/uuid": "^10.0.0",
       nodemon: "^3.1.9",
       "ts-node": "^10.9.2",
+      "tsconfig-paths": "^4.2.0",
       typescript: "^5.8.3",
     },
   };
@@ -271,7 +310,7 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:3000
   // README
   const readme = `# ${serviceName}
 
-Servizio EDG generato dal template.
+Servizio EDG generato dal template con struttura professionale.
 
 ## 🚀 Quick Start
 
@@ -285,11 +324,75 @@ npm run dev
 Servizio disponibile su: http://localhost:${port}
 Database: ${dbType} (${dbName})
 
+## 📁 Struttura Progetto
+
+\`\`\`
+${serviceName}/
+├── src/
+│   ├── core/              # Framework template (non modificare)
+│   ├── controllers/       # Controller per le route
+│   ├── middleware/        # Middleware Express custom
+│   ├── models/           # Modelli database
+│   ├── routes/           # Definizioni route
+│   ├── services/         # Business logic e servizi
+│   ├── types/            # Interfacce TypeScript
+│   ├── utils/            # Funzioni utility
+│   └── app.ts            # Entry point
+└── package.json
+\`\`\`
+
+## 🛠️ Sviluppo
+
+### Workflow Consigliato
+1. **Modelli**: Definisci entità in \`src/models/\`
+2. **Tipi**: Crea interfacce in \`src/types/\` 
+3. **Servizi**: Business logic in \`src/services/\`
+4. **Controller**: Gestione HTTP in \`src/controllers/\`
+5. **Route**: Binding in \`src/routes/\`
+6. **Middleware**: Logic custom in \`src/middleware/\`
+
+### Esempi Struttura
+
+\`\`\`typescript
+// src/models/Order.ts
+export const createOrderModel = (sequelize) => { ... }
+
+// src/types/Order.ts  
+export interface Order { id: string; ... }
+
+// src/services/OrderService.ts
+export class OrderService { ... }
+
+// src/controllers/OrderController.ts
+export class OrderController { ... }
+
+// src/routes/orders.ts
+export const ordersRouter = Router();
+
+// src/middleware/validateOrder.ts
+export const validateOrder = (req, res, next) => { ... }
+\`\`\`
+
 ## 📝 TODO
-- [ ] Implementare modelli specifici
-- [ ] Aggiungere business logic
-- [ ] Configurare validazione
-- [ ] Implementare test
+
+- [ ] Implementare modelli in \`src/models/\`
+- [ ] Creare controller in \`src/controllers/\`
+- [ ] Definire route in \`src/routes/\`
+- [ ] Aggiungere business logic in \`src/services/\`
+- [ ] Configurare middleware in \`src/middleware/\`
+- [ ] Definire tipi in \`src/types/\`
+- [ ] Aggiungere utility in \`src/utils/\`
+
+## 🔧 Comandi
+
+\`\`\`bash
+npm run dev        # Development con hot reload
+npm run build      # Build per production  
+npm run start      # Avvia production
+npm run db:sync    # Sync database (dev only)
+\`\`\`
+
+Generato il ${new Date().toLocaleDateString("it-IT")} dal Template EDG v1.0.0
 `;
 
   fs.writeFileSync(path.join(servicePath, "README.md"), readme);
